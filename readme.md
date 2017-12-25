@@ -6,7 +6,7 @@ This script deletes all the user's history in the selected channels.
 
 To retrieve your user token, open the discord webui while logged in, open Inspector with F12, click the Application tab. Under the Storage tree in the left column, select Local Storage > https://discordapp.com. Search for ```token``` and copy the value.
 
-To get the channel IDs, go to the channel you want to delete, copy the last portion of the url which should be in the format https://discordapp.com/channels/```<server id>```/```<channel id>```
+To get the channel IDs, go to the channel you want to delete, copy the last portion of the url which should be in the format https://discordapp.com/channels/ ```server id```/ ```channel id```
 
 ## Configure
 
