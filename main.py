@@ -2,20 +2,7 @@ import json
 import requests
 import time
 
-
-print("""
- /' \  /' \\
-/\_, \/\_, \\
-\/_/\ \/_/\ \\
-   \ \ \ \ \ \\
-    \ \_\ \ \_\\
-     \/_/  \/_/
-""")
-
-print("--- 11's discord deleter thing ---")
-print("--- extended by Imad ---")
-print("clears all of your messages in selected channels")
-print("in order for this script to work, the channel ids, auth token, and username are required in the json file")
+print("In order for this script to work, the channel ids, auth token, and username are required in the info.json file")
 
 with open('info.json', 'r') as f:
     info = json.load(f)
