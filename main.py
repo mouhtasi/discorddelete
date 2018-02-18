@@ -11,10 +11,25 @@ username = info['username']
 auth_token = info['auth_token']
 channels = info['channels']
 
-delete_from_all_users = True if input("delete messages from other users (y/n): ") == "y" else False
+
+def get_all_user_messages(auth_token, channel_id):
+    all_messages = []
+    num_of_returned_messages = 100
+    last_message_id = ''
+    while num_of_returned_messages == 100:
+        messages = get_100_messages(auth_token, channel_id, last_message_id)  # get 100 messages
+        if messages:
+            # last_message_id = min(messages, key=lambda x: x['timestamp'])
+            last_message = sorted(messages, key=lambda x: x['timestamp'], reverse=True)[-1]  # get the last message
+            last_message_id = last_message['id']
+            print('Downloading messages... {}'.format(last_message['timestamp']), end='\r')
+            filtered_messages = [m for m in messages if m['author']['username'] == username]  # filter for user's messages
+            all_messages += filtered_messages  # add these messages to the list
+            num_of_returned_messages = len(messages)  # count how many messages we got this time
+    return all_messages
 
 
-def get_all_messages(auth, id, last="", prev=[]):  # recursively find all messages in a channel, 100 at a time
+def get_100_messages(auth, id, last=''):
     if not last:  # first method call, start from beginning (might be able to remove)
         messages = json.loads(requests.get("http://discordapp.com/api/v6/channels/" + id + "/messages",
                                            headers={"authorization": auth},
@@ -24,32 +39,20 @@ def get_all_messages(auth, id, last="", prev=[]):  # recursively find all messag
                                            headers={"authorization": auth},
                                            params={"before": last, "limit": 100}).content)
 
-    prev = prev + messages
-
-    if len(messages) < 100:
-        print("got to end of channel at " + str(len(prev)) + " messages")
-        return prev
-    else:
-        oldest = sorted(messages, key=lambda x: x["timestamp"], reverse=True)[-1]
-        return get_all_messages(auth, id, last=oldest["id"], prev=prev)
+    return messages
 
 
-def delete_all(auth, id, user, messages):
+def delete_messages(auth, id, user, messages):
     print("deleting all messages in {} from username {}".format(id, user))
     for message in messages:
-        if delete_from_all_users:
-            requests.delete("http://discordapp.com/api/v6/channels/" + id + "/messages/" + message["id"],
-                            headers={"authorization": auth})
-            time.sleep(0.2)  # avoid rate limiting
-
-        else:
-            if message["author"]["username"] == user:
-                print(message['content'])
-                requests.delete("http://discordapp.com/api/v6/channels/" + id + "/messages/" + message["id"],
-                                headers={"authorization": auth})
-                time.sleep(0.2)  # avoid rate limiting
+        print(message['content'])
+        requests.delete("http://discordapp.com/api/v6/channels/" + id + "/messages/" + message["id"],
+                        headers={"authorization": auth})
+        time.sleep(0.2)  # avoid rate limiting
     print("all messages deleted")
 
 
-for channel_id in channels:
-    delete_all(auth_token, channel_id, username, get_all_messages(auth_token, channel_id))
+if __name__ == '__main__':
+    for channel_id in channels:
+        user_messages = get_all_user_messages(auth_token, channel_id)
+        delete_messages(auth_token, channel_id, username, user_messages)
